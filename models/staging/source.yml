@@ -1,0 +1,17 @@
+
+version: 2
+
+sources:
+  - name: raw
+    database: SAAS_ANALYTICS
+    schema: RAW
+
+    tables:
+      - name: subscriptions
+        identifier: SUBSCRIPTIONS
+
+      - name: organizations
+        identifier: ORGANIZATIONS
+
+      - name: plans
+        identifier: PLANS

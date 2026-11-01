@@ -1,0 +1,159 @@
+
+version: 2
+
+models:
+  - name: stg_subscriptions
+    description: >
+      Cleaned subscription records from Snowflake RAW.
+      One row represents one subscription interval.
+
+    columns:
+      - name: subscription_id
+        description: Unique identifier for each subscription.
+        data_tests:
+          - unique
+          - not_null
+
+      
+      - name: organization_id
+        description: Organization that owns the subscription.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_organizations')
+                field: organization_id
+
+      - name: plan_id
+        description: Subscription plan identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_plans')
+                field: plan_id
+
+
+      - name: started_on
+        description: Subscription start date.
+        data_tests:
+          - not_null
+
+
+  - name: stg_organizations
+    description: >
+      Cleaned organization records.
+      One row represents one customer organization.
+
+    columns:
+      - name: organization_id
+        description: Unique organization identifier.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: organization_name
+        description: Name of the customer organization.
+        data_tests:
+          - not_null
+
+
+  - name: stg_plans
+    description: >
+      Standardized subscription plan records.
+
+    columns:
+      - name: plan_id
+        description: Unique plan identifier.
+        data_tests:
+          - unique
+          - not_null
+
+
+version: 2
+
+models:
+  - name: fct_customer_monthly
+    description: >
+      One row per organization per active subscription month.
+      Contains customer-level month-end MRR.
+
+    columns:
+      - name: month_end
+        data_tests:
+          - not_null
+
+      - name: organization_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_organizations')
+                field: organization_id
+
+      - name: customer_mrr
+        data_tests:
+          - not_null
+
+
+  
+version: 2
+
+models:
+  - name: fct_monthly_saas_kpis
+    description: >
+      Monthly SaaS revenue and retention metrics.
+      Each row represents one month-end snapshot.
+      Revenue is calculated from active subscriptions
+      using monthly-equivalent plan pricing.
+
+    columns:
+      - name: month_end
+        description: "Month-end snapshot date."
+
+      - name: total_mrr
+        description: >
+          Total Monthly Recurring Revenue from
+          paying subscriptions active at month-end.
+
+      - name: starting_mrr
+        description: >
+          MRR at the end of the preceding month.
+
+      - name: new_mrr
+        description: >
+          MRR from customers becoming paying
+          customers for the first time.
+
+      - name: reactivation_mrr
+        description: >
+          MRR from previously paying customers
+          returning after a zero-MRR period.
+
+      - name: expansion_mrr
+        description: >
+          Additional MRR from existing paying customers.
+
+      - name: contraction_mrr
+        description: >
+          MRR lost when existing paying customers
+          reduce their recurring revenue but remain paying.
+
+      - name: churned_mrr
+        description: >
+          MRR lost when previously paying customers
+          become non-paying.
+
+      - name: customer_churn_rate_pct
+        description: >
+          Churned customers divided by paying customers
+          at the beginning of the month, multiplied by 100.
+
+      - name: nrr_pct
+        description: >
+          Net Revenue Retention percentage.
+          (Starting MRR + Expansion MRR
+          - Contraction MRR - Churned MRR)
+          / Starting MRR * 100.
+          Excludes new and reactivated revenue.
+
