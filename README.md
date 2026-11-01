@@ -1,15 +1,107 @@
-Welcome to your new dbt project!
+# SaaS Revenue Analytics Engineering
 
-### Using the starter project
+An end-to-end SaaS analytics project built using **Snowflake, dbt Core, SQL, and Power BI** to model recurring revenue, analyze customer retention, and deliver business-ready KPIs.
 
-Try running the following commands:
-- dbt run
-- dbt test
+## Business Objective
 
+SaaS companies need reliable metrics to understand revenue growth and customer retention.
 
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+This project creates a centralized analytics layer to answer questions such as:
+
+- How much Monthly Recurring Revenue (MRR) does the business generate?
+- How much revenue comes from new, reactivated, and expanding customers?
+- How much revenue is lost through contraction and churn?
+- What are the customer churn rate and Net Revenue Retention (NRR)?
+- How does recurring revenue change over time?
+
+## Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Snowflake | Cloud data warehouse |
+| dbt Core | SQL transformation, testing, and documentation |
+| SQL | Data modeling and SaaS metric calculations |
+| Power BI | KPI reporting and visualization |
+| Git & GitHub | Version control and collaboration |
+
+## Data Architecture
+
+The pipeline follows a layered analytics architecture:
+
+**Parquet source files → Snowflake RAW → dbt Staging → dbt Intermediate → dbt Marts → Reporting → Power BI**
+
+### Raw Layer
+
+Six SaaS source datasets are loaded into Snowflake: organizations, plans, users, subscriptions, invoices, and usage events.
+
+### Staging Layer
+
+Standardizes source fields, data types, and naming conventions for organizations, plans, and subscriptions.
+
+### Intermediate Layer
+
+Calculates subscription MRR, generates monthly subscription and customer snapshots, and classifies customer revenue movements.
+
+### Mart Layer
+
+Produces customer-level monthly revenue facts and company-level SaaS KPIs.
+
+### Reporting Layer
+
+Exposes completed-month SaaS KPIs for Power BI reporting.
+
+## Key SaaS Metrics
+
+| Metric | Definition |
+|---|---|
+| MRR | Sum of recurring monthly-equivalent subscription revenue |
+| New MRR | Revenue from first-time paying customers |
+| Reactivation MRR | Revenue from previously paying customers returning |
+| Expansion MRR | Additional revenue from existing paying customers |
+| Contraction MRR | Revenue lost when paying customers downgrade |
+| Churned MRR | Revenue lost when paying customers become non-paying |
+| Customer Churn Rate | Churned customers / starting paying customers × 100 |
+| NRR | (Starting MRR + Expansion − Contraction − Churned MRR) / Starting MRR × 100 |
+
+## Data Quality and Validation
+
+The project includes dbt tests for:
+
+- Unique customer-month combinations
+- Monthly subscription-to-customer MRR reconciliation
+- Monthly revenue movement reconciliation
+- Model-level key and null constraints
+
+Subscription pricing was also checked against 46,000 invoice records, including monthly and annual billing.
+
+## Power BI Dashboard
+
+The dashboard currently includes:
+
+- Total Monthly Recurring Revenue
+- Customer Churn Rate
+- Net Revenue Retention
+- Monthly MRR trend
+
+Additional revenue movement and retention visualizations are planned.
+
+## Modeling Assumptions and Limitations
+
+- Annual subscription prices are treated as monthly-equivalent amounts, supported by invoice reconciliation.
+- Subscription MRR is calculated from plan base price and billable seat count.
+- Customer activity is evaluated at month-end.
+- Subscriptions without recorded end dates remain active in subsequent monthly snapshots.
+- The dataset is synthetic. Later reporting months may contain no new source activity, so flat MRR and retention trends should not automatically be interpreted as real business stability.
+- The project currently uses a manual CSV export to Power BI rather than a scheduled live connection.
+
+## Future Improvements
+
+- Automated dbt CI checks with GitHub Actions
+- Scheduled data transformations
+- Additional Power BI revenue movement visualizations
+- Enhanced source freshness monitoring
+- Deployment documentation
+
+## Project Status
+
+Core Snowflake ingestion, dbt transformations, SaaS KPI calculations, reconciliation tests, and initial Power BI reporting are complete. Production automation and further dashboard development are in progress.
