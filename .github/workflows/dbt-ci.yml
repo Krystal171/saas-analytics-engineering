@@ -40,9 +40,40 @@ jobs:
                 role: placeholder
                 database: SAAS_ANALYTICS
                 warehouse: SAAS_WH
-                schema: STAGING
+                schema: CI
                 threads: 2
           EOF
 
+      
       - name: Validate dbt project
         run: dbt parse --profiles-dir ~/.dbt
+
+      - name: Verify CI schema isolation
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+
+          with open("target/manifest.json", encoding="utf-8") as f:
+              manifest = json.load(f)
+
+          models = [
+              node for node in manifest["nodes"].values()
+              if node["resource_type"] == "model"
+              and node["package_name"] == "saas_revenue"
+          ]
+
+          unexpected = [
+              (node["name"], node["schema"])
+              for node in models
+              if node["schema"].upper() != "CI"
+          ]
+
+          if unexpected:
+              raise SystemExit(
+                  f"Models outside CI schema: {unexpected}"
+              )
+
+          print(f"PASS: {len(models)} models target CI schema")
+          PY
+
