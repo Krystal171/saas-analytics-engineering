@@ -188,3 +188,41 @@ Pipeline Success / Failure
 ### Technologies
 
 Snowflake | dbt Core | SQL | GitHub Actions | Git | Python | RSA Key-Pair Authentication
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A["SaaS Source Data<br/>Organizations, Plans, Users,<br/>Subscriptions, Invoices, Usage"]
+    B["Snowflake RAW<br/>Source Tables"]
+    C["dbt Staging<br/>Clean and Standardize"]
+    D["dbt Intermediate<br/>Customer Monthly MRR Movements"]
+    E["dbt Marts<br/>Customer Metrics and Monthly KPIs"]
+    F["dbt Reporting<br/>SaaS KPI Reporting Model"]
+    G["Power BI<br/>Revenue and Retention Dashboard"]
+
+    H["GitHub Repository"]
+    I["GitHub Actions<br/>Pull Request Validation"]
+    J["Snowflake CI Schema<br/>Isolated dbt Build and Tests"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+
+    H --> I
+    I -.-> J
+    J -.-> C
+
+    classDef source fill:#e8f1ff,stroke:#3b82f6,color:#1e3a8a
+    classDef transform fill:#e8f7ef,stroke:#16a34a,color:#14532d
+    classDef reporting fill:#fff3df,stroke:#d97706,color:#78350f
+    classDef automation fill:#f1eaff,stroke:#8b5cf6,color:#581c87
+
+    class A,B source
+    class C,D,E transform
+    class F,G reporting
+    class H,I,J automation
+  ```
