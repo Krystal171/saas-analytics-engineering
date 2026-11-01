@@ -105,3 +105,29 @@ Additional revenue movement and retention visualizations are planned.
 ## Project Status
 
 Core Snowflake ingestion, dbt transformations, SaaS KPI calculations, reconciliation tests, and initial Power BI reporting are complete. Production automation and further dashboard development are in progress.
+
+
+## Development Workflow
+
+This project follows a Git-based development workflow.
+
+1. Create a feature branch from `main`.
+2. Make changes to dbt models, tests, or documentation.
+3. Commit and push changes to GitHub.
+4. Open a Pull Request targeting `main`.
+5. GitHub Actions automatically runs `dbt parse`.
+6. Review the CI results before merging.
+
+### Continuous Integration
+
+GitHub Actions validates the dbt project structure
+on pull requests to the main branch.
+
+Current CI checks:
+- Install Python and dbt-snowflake
+- Load the dbt project configuration
+- Run `dbt parse`
+
+Future improvement:
+- Execute dbt models and tests against an isolated
+  Snowflake CI environment.
