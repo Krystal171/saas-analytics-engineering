@@ -58,3 +58,47 @@ jobs:
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
         run: dbt debug --profiles-dir ~/.dbt
+
+
+      - name: Verify CI schema isolation
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+        shell: bash
+        run: |
+          dbt parse --target ci --profiles-dir ~/.dbt
+
+          python - <<'PY'
+          import json
+
+          with open("target/manifest.json", encoding="utf-8") as f:
+              manifest = json.load(f)
+
+          models = [
+              node for node in manifest["nodes"].values()
+              if node["resource_type"] == "model"
+              and node["package_name"] == "saas_revenue"
+          ]
+
+          if not models:
+              raise SystemExit("FAIL: No project models found")
+
+          unexpected = [
+              (node["name"], node["schema"])
+              for node in models
+              if node["schema"].upper() != "CI"
+          ]
+
+          if unexpected:
+              raise SystemExit(f"FAIL: Models outside CI schema: {unexpected}")
+
+          print(f"PASS: All {len(models)} models target CI schema")
+          PY
+
+      - name: Build and test dbt models
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+        run: dbt build --target ci --profiles-dir ~/.dbt
