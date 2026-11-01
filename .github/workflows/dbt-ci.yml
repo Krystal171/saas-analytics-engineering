@@ -40,7 +40,7 @@ jobs:
                 role: placeholder
                 database: SAAS_ANALYTICS
                 warehouse: SAAS_WH
-                schema: STAGING
+                schema: CI
                 threads: 2
           EOF
 
