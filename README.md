@@ -131,3 +131,60 @@ Current CI checks:
 Future improvement:
 - Execute dbt models and tests against an isolated
   Snowflake CI environment.
+
+
+## CI/CD Pipeline
+
+This project implements a CI/CD workflow using GitHub Actions, dbt Core, and Snowflake to validate analytics transformations and automate data quality testing.
+
+### CI/CD Architecture
+
+GitHub Repository
+       |
+       v
+Pull Request
+       |
+       v
+GitHub Actions — dbt parse
+       |
+       v
+Schema Isolation Validation
+       |
+       v
+Merge to Main
+       |
+       v
+Manual Snowflake Integration Workflow
+       |
+       v
+Snowflake Authentication (RSA Key Pair)
+       |
+       v
+Snowflake CI Schema
+       |
+       v
+dbt build (Models + Tests)
+       |
+       v
+Pipeline Success / Failure
+
+### Key Features
+
+- **Automated validation:** GitHub Actions validates the dbt project when a Pull Request is created.
+- **Isolated CI environment:** dbt models are built in `SAAS_ANALYTICS.CI`, separate from the development `STAGING` schema.
+- **Secure authentication:** GitHub Actions authenticates to Snowflake using RSA key-pair authentication and encrypted GitHub Secrets.
+- **Role-based access control:** A dedicated `SAAS_DBT_CI_ROLE` restricts CI permissions.
+- **Automated data quality testing:** `dbt build` executes models and associated dbt tests.
+- **Schema safety checks:** The workflow validates model destination schemas before execution.
+- **Manual deployment control:** Snowflake integration runs through `workflow_dispatch`, preventing automatic database execution on every Pull Request.
+
+### Validation Results
+
+- GitHub Actions Snowflake authentication: Passed
+- CI schema isolation check: Passed
+- dbt build and data quality tests: Passed
+- Snowflake CI schema: 10 dbt views created
+
+### Technologies
+
+Snowflake | dbt Core | SQL | GitHub Actions | Git | Python | RSA Key-Pair Authentication
